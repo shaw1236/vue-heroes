@@ -1,11 +1,10 @@
+// Go/MongoDb Micro Service for Hero
+//
+// Purpose: provide restful web api (CRUD)
+//
+// Author : Simon Li  July 2019
+//
 // ref: https://tutorialedge.net/golang/creating-restful-api-with-golang/
-// 
-// Go/MongoDb Service for Hero app 
-//
-// Purpose: provide restful web api 
-//
-// Author : Simon Li  July 2020
-//
 package main
 
 import (
@@ -15,6 +14,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -30,9 +30,11 @@ type Hero struct {
 	Name string `json:"name"`
 }
 
-// Data from database
+// Data from a database(sql, no-sql)
+// Notice: the hero data will be cached within the server !!
 var Heroes []Hero
 
+// Set the http header to control the contents and cors
 func setHeader(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -216,11 +218,13 @@ func handleApiQuery(w http.ResponseWriter, r *http.Request) {
 	//w.WriteHeader(http.StatusOK)
 }
 
+// Dummy home page
 func homePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the API Home Page powered by go & mongo!")
+	fmt.Fprintf(w, "Welcome to the API Home Page powered by go & mongoDb!")
 	fmt.Println("Endpoint Hit: homePage")
 }
 
+// handle requests for list query, creation, update
 func handleAll(w http.ResponseWriter, r *http.Request) {
 	setHeader(w)
 	fmt.Println("Method:", r.Method)
@@ -235,6 +239,7 @@ func handleAll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// handle requests for individual query, deletion
 func handleSingle(w http.ResponseWriter, r *http.Request) {
 	setHeader(w)
 
@@ -247,41 +252,41 @@ func handleSingle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Existing code from above
-func handleRequests(port int) {
+// Handle the http requests
+func handleRequests(port string) {
 	// creates a new instance of a mux router
 	myRouter := mux.NewRouter().StrictSlash(true)
 
-	// replace http.HandleFunc with myRouter.HandleFunc
+	// Router: root /
 	myRouter.HandleFunc("/", homePage)
 
+	// Router: /api/heroes - get, post, put/patch
 	myRouter.HandleFunc("/api/heroes", handleAll).Methods(http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodOptions)
+
+	// Router: /api/heroe/{id}  -- get and delete
 	myRouter.HandleFunc("/api/heroes/{id}", handleSingle).Methods(http.MethodGet, http.MethodDelete, http.MethodOptions)
 
+	// handle the cors
 	myRouter.Use(mux.CORSMethodMiddleware(myRouter))
 
-	// finally, instead of passing in nil, we want
-	// to pass in our newly created router as the second
-	// argument
-	sPort := fmt.Sprintf(":%d", port)
+	// Launch the server to listen a defined port
 	//log.Fatal(http.ListenAndServe(":10000", myRouter))
-	log.Fatal(http.ListenAndServe(sPort, myRouter))
+	log.Fatal(http.ListenAndServe(":"+port, myRouter))
 }
 
+// MongoDb connection
 func dbConnect() (*mongo.Client, *mongo.Collection) {
 	// Set client options
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Check the connection
 	err = client.Ping(context.TODO(), nil)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -294,6 +299,7 @@ func dbConnect() (*mongo.Client, *mongo.Collection) {
 	return client, collection
 }
 
+// Close the db connection
 func dbClose(client *mongo.Client) {
 	err := client.Disconnect(context.TODO())
 
@@ -303,6 +309,7 @@ func dbClose(client *mongo.Client) {
 	fmt.Println("Connection to MongoDB closed.")
 }
 
+// Query the full list from the database
 func getFromDatabase() {
 	// Open up our database connection.
 	client, collection := dbConnect()
@@ -341,6 +348,7 @@ func getFromDatabase() {
 	//fmt.Printf("Found multiple documents (array of pointers): %+v\n", Heroes)
 }
 
+// Query an individual document/record
 func dbFind(id int) (Hero, error) {
 	// Open up our database connection.
 	client, collection := dbConnect()
@@ -359,6 +367,7 @@ func dbFind(id int) (Hero, error) {
 	return hero, err
 }
 
+// Insert a document/record to the collection/table
 func dbInsert(hero Hero) {
 	// Open up our database connection.
 	client, collection := dbConnect()
@@ -376,6 +385,7 @@ func dbInsert(hero Hero) {
 	fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 }
 
+// Insert many a list of documents/records to the collection/table
 func dbInsertMany(heroes []Hero) {
 	// Open up our database connection.
 	client, collection := dbConnect()
@@ -395,6 +405,7 @@ func dbInsertMany(heroes []Hero) {
 	}
 }
 
+// Update a document/record in the collection/table
 func dbUpdate(hero Hero) {
 	// Open up our database connection.
 	client, collection := dbConnect()
@@ -420,6 +431,7 @@ func dbUpdate(hero Hero) {
 		updateResult.ModifiedCount)
 }
 
+// Delete a document/record from the collection/table
 func dbDelete(id int) {
 	// Open up our database connection.
 	client, collection := dbConnect()
@@ -436,12 +448,18 @@ func dbDelete(id int) {
 	fmt.Printf("Deleted %v documents in the heroes collection\n", deleteResult.DeletedCount)
 }
 
+// Main
 func main() {
 	fmt.Println("Rest API - Mongo")
-	go getFromDatabase()
+	go getFromDatabase() // no wait, an asynchronous run to load our global hero list
 	//fmt.Println(Heroes)
 
-	port := 8080
-	fmt.Println("Server start at port: ", port)
+	// Set up the server port
+	port := os.Getenv("API_PORT")
+	if len(port) == 0 {
+		port = "8080" // use the default port 8080 if no env found
+	}
+
+	fmt.Println("Server starts at port: ", port)
 	handleRequests(port)
 }

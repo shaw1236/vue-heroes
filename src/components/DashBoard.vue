@@ -30,14 +30,12 @@
 </template>
 
 <script>
-import axios from "axios";
-const Headers = { 'Content-Type': 'application/json' };
+import {HeroApiService} from "../services/HeroApiService";
 
 export default {
   data() {
     return {
       title: "Tour of Heroes", 
-      apiUrl: "http://localhost:8080/api/heroes",
       heroes: [],
       heroName: "",
       messages: []
@@ -45,7 +43,7 @@ export default {
   },
   created: function() {
     let vm = this;
-    axios.get(vm.apiUrl, {Headers}).then(res => vm.heroes = res.data.slice(0, 4))
+    HeroApiService.list().then(res => vm.heroes = res.data.slice(0, res.data.length >= 4? 4 : res.data.length))
     vm.add("Get the data from API");
   },
   methods: {

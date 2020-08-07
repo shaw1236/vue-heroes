@@ -18,20 +18,18 @@
 </template>
 
 <script>
-import axios from "axios";
-const Headers = { 'Content-Type': 'application/json' };
+import {HeroApiService} from "../services/HeroApiService";
 
 export default {
   data() {
     return { 
-      apiUrl: "http://localhost:8080/api/heroes",
       heroes: [],
       heroName: ""
     }
   },
   created: function() {
     let vm = this;
-    axios.get(vm.apiUrl, {Headers}).then(res => vm.heroes = res.data)
+    HeroApiService.list().then(res => vm.heroes = res.data)
   },
 
   methods: {
@@ -39,7 +37,7 @@ export default {
       let vm = this;
       //alert(vm.heroName);
       console.log("Call add api");
-      axios.post(vm.apiUrl, {name: vm.heroName}, {Headers}).then(response => {
+      HeroApiService.post({name: vm.heroName}).then(response => {
           console.log(response);
           let hero = response.data;
           vm.heroes.push(hero);
@@ -51,7 +49,7 @@ export default {
       let vm = this;     
       //alert(id);
       console.log("Call delete api");  
-      axios.delete(this.apiUrl + "/" + id, {Headers}).then(res => {
+      HeroApiService.delete(id).then(res => {
           console.log(res);
           vm.heroes = vm.heroes.filter(hero => hero.id !== id);
           vm.$forceUpdate();

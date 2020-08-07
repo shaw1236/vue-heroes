@@ -6,6 +6,8 @@
 </template>
 
 <script>
+import {HeroApiService} from "../services/HeroApiService";
+
 export default {
     data() {
         return {

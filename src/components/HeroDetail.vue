@@ -14,8 +14,7 @@
 </template>
 
 <script>
-import axios from "axios";
-const Headers = { 'Content-Type': 'application/json' };
+import {HeroApiService} from "../services/HeroApiService";
 
 export default {
   data() {
@@ -28,7 +27,7 @@ export default {
   created: function() {
     let vm = this;
     vm.hero.id = this.$route.params.id? this.$route.params.id : vm.hero.id; 
-    axios.get(vm.apiUrl + "/" + vm.hero.id, {Headers}).then(res => vm.hero = res.data)
+    HeroApiService.get(vm.hero.id).then(res => vm.hero = res.data)
   },
 
   methods: {
@@ -36,7 +35,7 @@ export default {
       let vm = this;
       
       console.log("Call add api");
-      axios.put(vm.apiUrl, vm.hero, {Headers}).then(response => {
+      HeroApiService.put(vm.hero).then(response => {
           console.log(response);
           vm.$forceUpdate();
       }).catch(error => console.log(error));

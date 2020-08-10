@@ -20,6 +20,9 @@
         </div>
       </router-link>
     </div>
+    <hr/>
+    <HeroSearch />
+    <br/>
     <div v-if="messages.length">
       <hr/>
         <h2>Messages</h2>
@@ -30,6 +33,8 @@
 </template>
 
 <script>
+import HeroSearch from "./HeroSearch.vue";
+
 import {HeroApiService} from "../services/HeroApiService";
 
 export default {
@@ -55,12 +60,11 @@ export default {
         this.messages.push(message);
         this.$forceUpdate();
      }
-  }
+  },
 
-  /*components: {
-    Message
-  }
-  */ 
+  components: {
+    HeroSearch
+  } 
 }
 
 </script>

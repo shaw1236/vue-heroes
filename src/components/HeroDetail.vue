@@ -1,6 +1,6 @@
 
 <template>
-  <div v-If="hero">
+  <div v-if="hero">
     <h2>{{uppercaseName}} - Details</h2>
     <div><span>Id: </span>{{hero.id}}</div>
     <div>

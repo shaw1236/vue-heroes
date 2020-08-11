@@ -29,7 +29,8 @@ export default {
   },
   created: function() {
     let vm = this;
-    HeroApiService.list().then(res => vm.heroes = res.data)
+    //if (vm.heroes.length === 0)
+      HeroApiService.list().then(res => vm.heroes = res.data)
   },
 
   methods: {

@@ -1,4 +1,3 @@
-
 <template>
   <div v-if="hero">
     <h2>{{uppercaseName}} - Details</h2>
@@ -34,9 +33,9 @@ export default {
     saveHero: function() {
       let vm = this;
       
-      console.log("Call add api");
+      //console.log("Call add api");
       HeroApiService.put(vm.hero).then(response => {
-          console.log(response);
+          //console.log(response);
           vm.$forceUpdate();
       }).catch(error => console.log(error));
     },

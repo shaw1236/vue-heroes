@@ -1,12 +1,15 @@
 <template>
-<div id="search-component">
-    <h4>Hero Search</h4>  
+<div>
+  <hr/>
+  <div id="search-component">
+    <h2>Hero Search</h2>  
     <input type="text" v-model="searchTerm"/>
     <ul class="search-result">
         <router-link v-for="hero in heroes$" :key="hero.id" :to="'/hero/'+ hero.id">
           <p>{{hero.name}}</p>
         </router-link>
     </ul>
+  </div>
 </div>
 </template>
 

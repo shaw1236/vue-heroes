@@ -20,50 +20,39 @@
         </div>
       </router-link>
     </div>
-    <hr/>
-    <HeroSearch />
-    <br/>
-    <div v-if="messages.length">
-      <hr/>
-        <h2>Messages</h2>
-          <button v-on:click="clear" class="clear">clear</button>
-          <div v-for="message in messages" :key="message"> {{message}} </div>
-    </div>
+    <HeroSearch />   <!-- vue HeroSearch component -->
+    <Message />      <!-- vue Message component -->
   </div>
 </template>
 
 <script>
+// Vue Custom Components
 import HeroSearch from "./HeroSearch.vue";
+import Message from "./Message.vue";
 
+// Vue Custom Services
 import {HeroApiService} from "../services/HeroApiService";
+import {MessageService} from "../services/MessageService";
 
 export default {
   data() {
     return {
       title: "Tour of Heroes", 
       heroes: [],
-      heroName: "",
-      messages: []
+      heroName: ""
     }
   },
   created: function() {
     let vm = this;
     HeroApiService.list().then(res => vm.heroes = res.data.slice(0, res.data.length >= 4? 4 : res.data.length))
-    vm.add("Get the data from API");
   },
   methods: {
-     clear: function() {
-        this.messages.length = 0;
-        this.$forceUpdate();
-     },
-     add: function(message) {
-        this.messages.push(message);
-        this.$forceUpdate();
-     }
+      dummy: function() {}
   },
 
-  components: {
-    HeroSearch
+  components: {  // Include sub components
+      HeroSearch,
+      Message
   } 
 }
 
